@@ -26,11 +26,12 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->libdir.'/formslib.php');
 
+
 class sae_form extends moodleform {
 
     function definition() {
+        global $CFG, $DB;
 
-        global $CFG, $DB, $subt;
 
         //$chapter = $this->_customdata['chapter'];
 
@@ -40,32 +41,44 @@ class sae_form extends moodleform {
 
         $mform->addElement('header', 'sae', get_string('pluginname', 'block_sae'));  
 
-        $mform->addElement('select', 'campo1', 'Selecione ala', $topics, $attributes);     
-
+        $asd = $mform->addElement('select', 'campo1', 'Selecione tópico', $topics, $attributes);     
         $i = 0;
+
+        $ativo = 'nenhum';
+
+
         foreach($topics as $topic) {
         	$topic_id = $DB->get_field('sae_topic', 'id', array('name' => $topic));
         	$subtopic_names = $DB->get_fieldset_sql('SELECT name FROM {sae_topic} WHERE parent_id = ?', array($topic_id));
-
         	// fim db
 
-        	$mform->addElement('select', 'type'.$i, '', $subtopic_names);
+        	$mform->addElement('select', 'type'.$i, '', $subtopic_names, array('onchange' => 'javascript:change(name);'));
 
             $mform->hideIf('type'.$i, 'campo1', 'neq', $i);
 
+            echo "<script>
+            function change(name) {
+
+            	console.log(name);
+            	document.getElementById('id_type0').id = 'test'
+            	return name;
+        	}
+        	</script>";
 
         	$i++;
     	}
 
-    	//echo "<script>console.log( 'Debug Objects: " .$record->id. "' );</script>";
+
 
     	$all_help_title = $DB->get_recordset_sql('SELECT * FROM {sae_topic_help}');
+
+    	$j = 0;
     	foreach ($all_help_title as $record) {
-		    $mform->addElement('static', 'static', $record->title, $record->description);
 
-		    echo "<script>console.log( 'Debug: ';</script>";
+    		if($mform->getElement('test') != null)
+				$mform->addElement('static', 'valores', $record->title, '<span style="color:red">'.$record->description.'</span>');
 
-		    //$subt_id = $DB->get_field()
+		    $j++;
 		}
 		$all_help_title->close();
     	
@@ -89,7 +102,7 @@ class sae_form extends moodleform {
         $pagenum = $mform->getElement('pagenum');
         if ($pagenum->getValue() == 1) {
             $mform->hardFreeze('subchapter');
-        }
+        }       
     }
 }
 

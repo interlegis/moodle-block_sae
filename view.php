@@ -32,13 +32,9 @@ $mform = new sae_form(null, array('chapter'=>$chapter, 'options'=>$options, 'con
 
 echo $OUTPUT->header();
 echo html_writer::start_tag('div', array('class'=>'heightcontainer'));
-// echo $OUTPUT->heading(get_string('sae', 'sae'));
-
-//Link to calendar export page.
-// echo $OUTPUT->container_start('bottom');
 
 
-// echo $OUTPUT->container_end();
+
 echo html_writer::end_tag('div');
 
 echo $mform->display();
