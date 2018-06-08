@@ -17,7 +17,7 @@ $debug="0";
 $config = array(
         //'url'=>'10.1.2.242/osticket/upload/api/http.php/tickets.json',  // URL to site.tld/api/tickets.json
     'url'=>'http://10.1.2.242/osticket/upload/api/http.php/tickets.json',
-    'key'=>'B154D35D63E7A4ADAE8BA8282C6490CD'  // API Key goes here
+    'key'=>'C2609F0098D8B8D804C2FC1DE00F2C0E'  // API Key goes here
 );
 
 # NOTE: some people have reported having to use "http://your.domain.tld/api/http.php/tickets.json" instead.
@@ -107,7 +107,7 @@ switch ($assunto) {
 $data = array(
     'name'      =>      $name,  // from name aka User/Client Name
     'email'     =>      $email,  // from email aka User/Client Email
-    'phone'     =>      $phone,  // phone number aka User/Client Phone Number
+    //'phone'     =>      $phone,  // phone number aka User/Client Phone Number
     'subject'   =>      $assunto,  // test subject, aka Issue Summary
     'message'   =>      $mensagem,  // test ticket body, aka Issue Details.
     'ip'        =>      $_SERVER['REMOTE_ADDR'], // Should be IP address of the machine thats trying to open the ticket.

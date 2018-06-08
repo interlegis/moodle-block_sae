@@ -17,8 +17,8 @@
 /**
  * Chapter edit form
  *
- * @package    mod_book
- * @copyright  2004-2010 Petr Skoda {@link http://skodak.org}
+ * @package    block_sae
+ * @copyright  2018 Billy Brian {billybrianm@gmail.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +28,6 @@ require_once($CFG->libdir.'/formslib.php');
 
 
 class sae_form extends moodleform {
-
     function definition() {
         global $CFG, $DB;
 
@@ -39,9 +38,9 @@ class sae_form extends moodleform {
 
         $topics = $DB->get_fieldset_sql('SELECT name FROM {sae_topic} WHERE parent_id is null');
 
-        $mform->addElement('header', 'sae', get_string('pluginname', 'block_sae'));  
+        //$mform->addElement('header', 'sae', get_string('pluginname', 'block_sae'));  
 
-        $asd = $mform->addElement('select', 'campo1', 'Selecione tópico', $topics, $attributes);     
+        $asd = $mform->addElement('select', 'campo1', 'Selecione tópico', $topics, array('onchange' => 'javascript:campo1Change(this);'));     
         $i = 0;
 
         $ativo = 'nenhum';
@@ -52,57 +51,167 @@ class sae_form extends moodleform {
         	$subtopic_names = $DB->get_fieldset_sql('SELECT name FROM {sae_topic} WHERE parent_id = ?', array($topic_id));
         	// fim db
 
-        	$mform->addElement('select', 'type'.$i, '', $subtopic_names, array('onchange' => 'javascript:change(name);'));
+        	array_unshift($subtopic_names, " ");
 
-            $mform->hideIf('type'.$i, 'campo1', 'neq', $i);
+        	$mform->addElement('select', 'topic'.$i, '', $subtopic_names, array('onchange' => 'javascript:change(this);'));
 
-            echo "<script>
-            function change(name) {
-
-            	console.log(name);
-            	document.getElementById('id_type0').id = 'test'
-            	return name;
-        	}
-        	</script>";
+            $mform->hideIf('topic'.$i, 'campo1', 'neq', $i);                 
 
         	$i++;
     	}
+        $mform->hideIf('topic2', 'campo1', 'neq', 0);
+        $mform->hideIf('topic3', 'campo1', 'neq', 0);
 
+        $mform->addElement('textarea', 'elogio', 'Insira seu elogio', 'wrap="virtual" rows="10" cols="50"');
+        $mform->hideIf('elogio', 'campo1', 'neq', 2);
 
+        $mform->addElement('textarea', 'sugestao', 'Insira sua sugestão', 'wrap="virtual" rows="10" cols="50"');
+        $mform->hideIf('sugestao', 'campo1', 'neq', 3);
 
     	$all_help_title = $DB->get_recordset_sql('SELECT * FROM {sae_topic_help}');
 
     	$j = 0;
     	foreach ($all_help_title as $record) {
-
-    		if($mform->getElement('test') != null)
-				$mform->addElement('static', 'valores', $record->title, '<span style="color:red">'.$record->description.'</span>');
-
+				//$mform->addElement('static', 'valores'.$j, $record->title, $record->description);
+				//$mform->hideIf('valores', 'campo1', 'neq', $j);
 		    $j++;
 		}
 		$all_help_title->close();
-    	
 
-        $mform->addElement('hidden', 'pagenum');
-        $mform->setType('pagenum', PARAM_INT);
+		echo "
+		<script>
+		function campo1Change(who) {
+			if(!(lastOpen === null)) {
+				lastOpen.selectedIndex = 0;
+				change(lastOpen);
+			} else {
+				change(who);
+			}
 
-        $this->add_action_buttons(false, 'Enviar');
+			  var duvida = Boolean(document.getElementById('id_campo1').options[document.getElementById('id_campo1').selectedIndex].text == 'Dúvida');
+			  var reclamacao = Boolean(document.getElementById('id_campo1').options[document.getElementById('id_campo1').selectedIndex].text == 'Reclamação');
 
-        // set the defaults
-        $this->set_data($chapter);
+
+			if(who.options[who.selectedIndex].text == 'Dúvida' || who.options[who.selectedIndex].text == 'Reclamação') {
+			    document.getElementById('sendmail').style.display = 'block';
+			} else if (who.options[who.selectedIndex].text == 'Elogio' || who.options[who.selectedIndex].text == 'Sugestão'){
+			    document.getElementById('sendmail').style.display = 'none';
+			    document.getElementById('hidemail').style.display = 'none';
+			    document.getElementById('mensagem').style.display = 'none';
+			}
+		}
+
+		var lastOpen = null;
+
+		function change(name) {
+
+			var i;
+			for (i = 0; i < document.getElementsByClassName('coll').length; i++) {
+				document.getElementsByClassName('coll')[i].setAttribute('aria-expanded', 'false');
+				document.getElementsByClassName('coll')[i].classList.remove('in');
+			}
+
+
+			lastOpen = name;
+
+			var divs = document.getElementsByClassName('tagged');
+			var titles = document.getElementsByClassName('title');
+
+			for (i = 0; i < document.getElementsByClassName('tagged').length; i++) {
+				divs[i].style.display = 'none';
+				titles[i].style.display = 'none';
+
+				document.getElementById('hhelp'+i).style.display = 'none';
+				document.getElementById('thelp'+i).style.display = 'none';
+
+			} 
+			getOutput(name.options[name.selectedIndex].text);
+			//document.getElementById('thelp'+name.value).innerHTML = name.options[name.selectedIndex].text;
+			return name;
+		}
+
+        function getOutput(id) {
+			getRequest(
+			'sae_ajax.php',	// URL do PHP
+			drawOutput,		// funcao de sucesso 
+			drawError,		// funcao de erro (catch)
+			id				// parametro
+			);
+			return false;
+		}
+
+		function drawError() {
+			console.log('Error.');
+		}
+
+		function drawOutput(response) {
+
+			var js = JSON.parse(response);
+
+			var i;
+			var title = document.getElementsByClassName('title');
+			var body = document.getElementsByClassName('tagged');
+
+			for (i = 0; i < js.length; i++) {
+				body[i].style.display = '';
+				body[i].innerHTML = js[i].description;
+				
+				title[i].style.display = '';
+				title[i].innerHTML = js[i].title;
+
+				document.getElementById('hhelp'+i).style.display = 'block';
+				document.getElementById('thelp'+i).style.display = 'block';
+
+			} 
+		}
+
+		function getRequest(url, success, error, id) {
+			var req = false;
+			try{
+				// browsers normais
+				req = new XMLHttpRequest();
+			} catch (e){
+				// IE
+				try {
+					req = new ActiveXObject('Msxml2.XMLHTTP');
+				} catch(e) {
+				// IE mais antigo
+					try{
+						req = new ActiveXObject('Microsoft.XMLHTTP');
+					} catch(e) {
+						return false;
+					}
+				}
+			}
+			if (!req) return false;
+			if (typeof success != 'function') success = function () {};
+			if (typeof error!= 'function') error = function () {};
+			req.onreadystatechange = function(){
+				if(req.readyState == 4) {
+					return req.status === 200 ? 
+					success(req.responseText) : error(req.status);
+				}
+			}
+			req.open('GET', url+'?topic='+id, true);
+			req.send(null);
+			return req;
+		}
+        </script>";
+
+
+        $this->add_action_buttons(false, 'Enviar e-mail');
+
+        //$mform->hideIf('submitbutton', 'campo1', 'eq', 0);
+        //$mform->hideIf('submitbutton', 'campo1', 'eq', 1);
+
+        $mform->disable_form_change_checker();
+
+
+        
     }
 
     function get_submit_value($elementname) {
         $mform = $this->_form;
         return $mform->getSubmitValue($elementname);
     }
-    
-    function definition_after_data(){
-        $mform = $this->_form;
-        $pagenum = $mform->getElement('pagenum');
-        if ($pagenum->getValue() == 1) {
-            $mform->hardFreeze('subchapter');
-        }       
-    }
 }
-
