@@ -83,6 +83,7 @@ echo $mform->display();
 
 $j = 0;
 $all_help_title = $DB->get_recordset_sql('SELECT * FROM {sae_topic_help}');
+
 foreach ($all_help_title as $record) {
     echo '
     <div class="panel-group">

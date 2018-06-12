@@ -31,20 +31,14 @@ class sae_form extends moodleform {
     function definition() {
         global $CFG, $DB;
 
-
         //$chapter = $this->_customdata['chapter'];
 
         $mform = $this->_form;
 
         $topics = $DB->get_fieldset_sql('SELECT name FROM {sae_topic} WHERE parent_id is null');
 
-        //$mform->addElement('header', 'sae', get_string('pluginname', 'block_sae'));  
-
         $asd = $mform->addElement('select', 'campo1', 'Selecione tópico', $topics, array('onchange' => 'javascript:campo1Change(this);'));     
         $i = 0;
-
-        $ativo = 'nenhum';
-
 
         foreach($topics as $topic) {
         	$topic_id = $DB->get_field('sae_topic', 'id', array('name' => $topic));
@@ -68,18 +62,7 @@ class sae_form extends moodleform {
         $mform->addElement('textarea', 'sugestao', 'Insira sua sugestão', 'wrap="virtual" rows="10" cols="50"');
         $mform->hideIf('sugestao', 'campo1', 'neq', 3);
 
-    	$all_help_title = $DB->get_recordset_sql('SELECT * FROM {sae_topic_help}');
-
-    	$j = 0;
-    	foreach ($all_help_title as $record) {
-				//$mform->addElement('static', 'valores'.$j, $record->title, $record->description);
-				//$mform->hideIf('valores', 'campo1', 'neq', $j);
-		    $j++;
-		}
-		$all_help_title->close();
-
 		echo file_get_contents("sae_form_js.php");
-
 
         $this->add_action_buttons(false, 'Enviar e-mail');
         $mform->hideIf('submitbutton', 'campo1', 'eq', 0);
