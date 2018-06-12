@@ -81,9 +81,6 @@ echo $OUTPUT->heading(format_string('Sistema de Atendimento ao Estudante'));
 
 echo $mform->display();
 
-if($obr)
-  print('<p id="obrigado"><b>Obrigado pela sua mensagem de '.$obr.'!</b></p>');
-
 $j = 0;
 $all_help_title = $DB->get_recordset_sql('SELECT * FROM {sae_topic_help}');
 foreach ($all_help_title as $record) {

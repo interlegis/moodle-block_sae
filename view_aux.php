@@ -15,11 +15,6 @@
 <div id='hid' hidden></div>
 
 <script>
-
-  //console.log(document.getElementById('id_campo1').options[document.getElementById('id_campo1').selectedIndex].text);
-
-  
-
   function hideMail() {
     if(document.getElementById('mensagem').style.display == 'block') {
       document.getElementById('mensagem').style.display = 'none';
