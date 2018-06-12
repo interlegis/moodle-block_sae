@@ -34,68 +34,26 @@ $assunto1 = $_POST['assunto1'];
 $assunto2 = $_POST['assunto2'];
 $assunto3 = $_POST['assunto3'];
 $mensagem = $_POST['mensagem'];
+$muserid = $_POST['muserid'];
 
-if (!empty($assunto3) || !empty($assunto2)) {
-  if (!empty($assunto3)) {
-    $assunto = $assunto3;
-  }
-  if(!empty($assunto2)){
-   $assunto = $assunto2; 
-  }
-}else{
-  $assunto = $assunto1;
-}
+$assunto = $assunto1;
 
-switch ($assunto) {
-  case 'Dúvidas sobre certificados':
-    $topicId = 17;
-    break;
+switch ($assunto2) {
 
-  case 'Dúvidas sobre cursos':
-    $topicId = 18;
-    break;
-
-  case 'Reclamações sobre certificados':
-    $topicId = 21;
-    break;
-
-  case 'Reclamações sobre cursos':
-    $topicId = 22;
-    break;
-
-  case 'Dúvidas':
+  case 'Dúvida':
     $topicId = 13;
     break;
 
-  case 'Dúvidas sobre dados cadastrais':
-    $topicId = 19;
-    break;
 
-  case 'Outras dúvidas':
-    $topicId = 20;
-    break;
-
-  case 'Elogios':
+  case 'Elogio':
     $topicId = 16;
     break;
 
-  case 'Reclamações':
+  case 'Reclamação':
     $topicId = 14;
     break;
 
-  case 'Outras reclamações':
-    $topicId = 25;
-    break;
-
-  case 'Reclamações sobre dados cadastrais':
-    $topicId = 24;
-    break;
-
-  case 'Reclamações sobre tutor':
-    $topicId = 23;
-    break;
-
-  case 'Sugestões':
+  case 'Sugestão':
     $topicId = 15;
     break;
   
@@ -111,7 +69,8 @@ $data = array(
     'subject'   =>      $assunto,  // test subject, aka Issue Summary
     'message'   =>      $mensagem,  // test ticket body, aka Issue Details.
     'ip'        =>      $_SERVER['REMOTE_ADDR'], // Should be IP address of the machine thats trying to open the ticket.
-  'topicId'   =>      $topicId, // the help Topic that you want to use for the ticket 
+  'topicId'   =>      $topicId,
+  'moodleuserid' => $muserid, // the help Topic that you want to use for the ticket 
   //'Agency'  =>    '58', //this is an example of a custom list entry. This should be the number of the entry.
   //'Site'  =>    'Bermuda'; // this is an example of a custom text field.  You can push anything into here you want. 
     'attachments' => array()
@@ -121,7 +80,7 @@ $data = array(
 # https://github.com/osTicket/osTicket-1.8/blob/develop/setup/doc/api/tickets.md
 
 
-  print_r($data);
+  //print_r($data);
   // die();
 
 

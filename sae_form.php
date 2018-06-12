@@ -51,9 +51,9 @@ class sae_form extends moodleform {
         	$subtopic_names = $DB->get_fieldset_sql('SELECT name FROM {sae_topic} WHERE parent_id = ?', array($topic_id));
         	// fim db
 
-        	array_unshift($subtopic_names, " ");
+        	array_unshift($subtopic_names, "Selecione...");
 
-        	$mform->addElement('select', 'topic'.$i, '', $subtopic_names, array('onchange' => 'javascript:change(this);'));
+        	$mform->addElement('select', 'topic'.$i, '', $subtopic_names, array('onchange' => 'javascript:change(this, false);'));
 
             $mform->hideIf('topic'.$i, 'campo1', 'neq', $i);                 
 
@@ -81,38 +81,40 @@ class sae_form extends moodleform {
 		echo "
 		<script>
 		function campo1Change(who) {
-			if(!(lastOpen === null)) {
-				lastOpen.selectedIndex = 0;
-				change(lastOpen);
-			} else {
-				change(who);
-			}
+			if(document.getElementById('obrigado'))
+				document.getElementById('obrigado').innerHTML = '';
 
-			  var duvida = Boolean(document.getElementById('id_campo1').options[document.getElementById('id_campo1').selectedIndex].text == 'Dúvida');
-			  var reclamacao = Boolean(document.getElementById('id_campo1').options[document.getElementById('id_campo1').selectedIndex].text == 'Reclamação');
+			change(who, true);
 
-
-			if(who.options[who.selectedIndex].text == 'Dúvida' || who.options[who.selectedIndex].text == 'Reclamação') {
-			    document.getElementById('sendmail').style.display = 'block';
-			} else if (who.options[who.selectedIndex].text == 'Elogio' || who.options[who.selectedIndex].text == 'Sugestão'){
+			//if(who.options[who.selectedIndex].text == 'Dúvida' || who.options[who.selectedIndex].text == 'Reclamação') {
+			    //document.getElementById('sendmail').style.display = 'block';
+			//} 
+			//else 
+			if (who.options[who.selectedIndex].text == 'Elogio' || who.options[who.selectedIndex].text == 'Sugestão'){
 			    document.getElementById('sendmail').style.display = 'none';
 			    document.getElementById('hidemail').style.display = 'none';
 			    document.getElementById('mensagem').style.display = 'none';
 			}
 		}
 
-		var lastOpen = null;
+		function change(name, isCampo) {
 
-		function change(name) {
+			if(!isCampo) {
+				if(name.value == 0)
+					document.getElementById('sendmail').style.display = 'none';
+				else
+					document.getElementById('sendmail').style.display = 'block';
 
+				console.log(name.value);
+			}
+
+			
+			document.getElementById('hid').innerHTML = name.options[name.selectedIndex].text;
 			var i;
 			for (i = 0; i < document.getElementsByClassName('coll').length; i++) {
 				document.getElementsByClassName('coll')[i].setAttribute('aria-expanded', 'false');
 				document.getElementsByClassName('coll')[i].classList.remove('in');
 			}
-
-
-			lastOpen = name;
 
 			var divs = document.getElementsByClassName('tagged');
 			var titles = document.getElementsByClassName('title');
@@ -201,8 +203,8 @@ class sae_form extends moodleform {
 
         $this->add_action_buttons(false, 'Enviar e-mail');
 
-        //$mform->hideIf('submitbutton', 'campo1', 'eq', 0);
-        //$mform->hideIf('submitbutton', 'campo1', 'eq', 1);
+        $mform->hideIf('submitbutton', 'campo1', 'eq', 0);
+        $mform->hideIf('submitbutton', 'campo1', 'eq', 1);
 
         $mform->disable_form_change_checker();
 

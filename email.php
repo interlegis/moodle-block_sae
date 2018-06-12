@@ -50,9 +50,13 @@ else if ($data = $mform->get_data()) {
     $result = file_get_contents($CFG->wwwroot.'/blocks/sae/ticket.php', null, $context);
     //echo "<script>console.log('".$context."');</script>";
 
+    print('<b>E-mail enviado com sucesso!</b>');
+
     //print_r($result);
 
-    redirect('view.php');
+    //redirect('view.php');
+} else {
+	 echo "<script>console.log('nada');</script>";
 }
 
 ECHO $mform->display();

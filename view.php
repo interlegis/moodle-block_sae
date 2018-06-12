@@ -10,7 +10,7 @@
 require_once('../../config.php');
 require_once('sae_form.php');
 
-$url = new moodle_url('/sae/view.php');
+$url = new moodle_url('/blocks/sae/view.php');
 
 global $DB, $USER;
 
@@ -40,6 +40,7 @@ if ($data = $mform->get_data()) {
     else if ($data->sugestao) {
       $msg = $data->sugestao;
       $sub = 'Sugestão';
+
     }
 
     $name = fullname($USER);   
@@ -47,28 +48,29 @@ if ($data = $mform->get_data()) {
     $context = stream_context_create(array(
         'http' => array(
             'method'  => 'POST',
-            'content' => 'nome='.$name.'&email='.$USER->email.'&assunto1='.$sub.'&mensagem='.$msg,
+            'content' => 'nome='.$name.'&email='.$USER->email.'&assunto1='.$sub.'&mensagem='.$msg.'&muserid='.$USER->id.'&assunto2='.$sub,
+            //'content' => $content,
         )
-    ));
+    ));  
       
     $result = file_get_contents($CFG->wwwroot.'/blocks/sae/ticket.php', null, $context);
-    if($result == '201' && $data->elogio) {
-      $elogio = true;
-    } else if($result == '201' && $data->sugestao) {
-      $sugestao = true;
-    }
-  } else {
-    js("
-      window.onload = function() {
-        who = document.getElementById('id_campo1');
-        console.log(who);
-        window.location = 'email.php?type=' + who.options[who.selectedIndex].text;
-      }
-      ");
-    //redirect('email.php?type=');
-  }
-} else if($mform->no_submit_button_pressed()) {
 
+    dbg('Result: ' . trim($result));
+
+    if(trim($result) == '201') {
+      $keys = array_keys((array)$data);
+      foreach($keys as $key) {
+        if($key != 'campo1' && $key != 'submitbutton') {
+          $obr = $key;
+        }
+      }
+    }
+
+    notice('Mensagem enviada com sucesso!', new moodle_url($PAGE->url));
+
+  } else {
+    notice('Por favor digite uma mensagem.', new moodle_url($PAGE->url));
+  }
 }
 
 
@@ -78,6 +80,9 @@ echo $OUTPUT->heading(format_string('Sistema de Atendimento ao Estudante'));
 
 
 echo $mform->display();
+
+if($obr)
+  print('<p id="obrigado"><b>Obrigado pela sua mensagem de '.$obr.'!</b></p>');
 
 $j = 0;
 $all_help_title = $DB->get_recordset_sql('SELECT * FROM {sae_topic_help}');
@@ -107,10 +112,39 @@ function js($what) {
 }
 
 function dbg($what) {
-  echo "<script>console.log('".$what."');</script>";
+  echo '<script>console.log("'.$what.'");</script>';
 }
 
-//echo file_get_contents("view_aux.php");
+echo file_get_contents("view_aux.php");
+echo "
+  <script>
+    function send() {
+    if(document.getElementById('mensagem').style.display == 'none') {
+      document.getElementById('mensagem').style.display = 'block';
+      document.getElementById('hidemail').style.display = 'block';      
+    } else {
+      var hid = document.getElementById('hid').innerHTML;
+      var mess = document.getElementById('mensagem').value;
+      var topic = document.getElementById('id_campo1').options[document.getElementById('id_campo1').selectedIndex].text;
+      var xhr = new XMLHttpRequest();
+        xhr.open('POST', '$CFG->wwwroot/blocks/sae/ticket.php', true);
+
+        //Envia o cabeçalho informativo adequado junto com a requisição.
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+        xhr.onreadystatechange = function() {//Call a function when the state changes.
+            if(xhr.readyState == XMLHttpRequest.DONE) {
+                console.log('Mensagem enviada! Output: ' + xhr.status);
+                if(xhr.status == 200) {                  
+                  alert('Mensagem enviada com sucesso!');
+                  window.location.replace('$CFG->wwwroot/blocks/sae/view.php');
+                }
+            }
+        }
+        xhr.send('nome=".$name."&email=".$USER->email."&assunto1='+hid+'&assunto2='+topic+'&mensagem='+mess+'&muserid=".$USER->id."'); 
+    }    
+  }
+  </script>";
 
 echo $OUTPUT->footer();
 
